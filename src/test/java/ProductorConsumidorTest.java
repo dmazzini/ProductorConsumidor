@@ -5,49 +5,83 @@ import org.junit.Test;
 
 public class ProductorConsumidorTest {
 	
+	private static final int TAMAÑO_BUFFER = 4;
+
 	@Test
 	public void bufferNuevo() {
-		Buffer buffer = new Buffer();
-		assertEquals(0, buffer.size());
+		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+		
+		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
+		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
+		assertEquals(0, buffer.ocupado());
 	}
 	
 	@Test
-	public void agregarElementoABuffer() {
-		Buffer buffer = new Buffer();
+	public void agregarElementoABuffer() throws BufferCompletoException {
+		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+		
 		buffer.agregarElemento();
-		assertEquals(1, buffer.size());
+		
+		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
+		assertEquals(TAMAÑO_BUFFER-1, buffer.disponible());
+		assertEquals(1, buffer.ocupado());
+	}
+	
+	@Test(expected=BufferCompletoException.class)
+	public void agregarElementoABufferCompleto() throws BufferCompletoException {
+		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+		
+		buffer.agregarElemento();
+		buffer.agregarElemento();
+		buffer.agregarElemento();
+		buffer.agregarElemento();
+		buffer.agregarElemento();
+		
 	}
 	
 	@Test
-	public void quitarElementoABuffer() {
-		Buffer buffer = new Buffer();
+	public void quitarElementoABuffer() throws BufferSinElementosException, BufferCompletoException {
+		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+		
 		buffer.agregarElemento();
 		buffer.quitarElemento();
-		assertEquals(0, buffer.size());		
+		
+		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
+		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
+		assertEquals(0, buffer.ocupado());
 	}
 	
-	@Test
-	public void quitarElementoABufferNuevo() {
-		Buffer buffer = new Buffer();
+	@Test(expected=BufferSinElementosException.class)
+	public void quitarElementoABufferNuevo() throws BufferSinElementosException {
+		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+		
 		buffer.quitarElemento();
-		assertEquals(0, buffer.size());		
+
 	}
 	
 	@Test
 	public void producirElemento() {
-		Buffer buffer = new Buffer();
+		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
 		Productor productor = new Productor(buffer);
+		
 		productor.producir();
-		assertEquals(1, buffer.size());
+		
+		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
+		assertEquals(TAMAÑO_BUFFER-1, buffer.disponible());
+		assertEquals(1, buffer.ocupado());
 	}
 	
 	@Test
 	public void consumirElemento() {
-		Buffer buffer = new Buffer();
+		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
 		Productor productor = new Productor(buffer);
-		productor.producir();
 		Consumidor consumidor = new Consumidor(buffer);
+		
+		productor.producir();
 		consumidor.consumir();
-		assertEquals(0, buffer.size());
+		
+		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
+		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
+		assertEquals(0, buffer.ocupado());
 	}
 }

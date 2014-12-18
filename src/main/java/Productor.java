@@ -8,7 +8,12 @@ public class Productor {
 	}
 
 	public void producir() {
-		this.buffer.agregarElemento();
+		try {
+			this.buffer.agregarElemento();
+		} catch (BufferCompletoException e) {
+			// debe ponerse el thread a esperar a que se consuma un elemento.
+			e.printStackTrace();
+		}
 	}
 
 }
