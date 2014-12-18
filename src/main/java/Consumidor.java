@@ -7,18 +7,31 @@ public class Consumidor implements Runnable {
 		this.buffer = buffer;
 	}
 
-	public void consumir() {
-		try {
-			this.buffer.quitarElemento();
-		} catch (BufferSinElementosException e) {
-			// debe ponerse el thread a esperar a que se produzca un elemento.
-			e.printStackTrace();
+	public void consumir() throws InterruptedException {
+		synchronized (buffer) {
+			while (buffer.ocupado() == 0) {
+				this.buffer.wait();
+				System.out.println("Thread " + Thread.currentThread().getName()
+						+ " esperando consumir.");
+			}
+			try {
+				this.buffer.quitarElemento();
+				this.buffer.notifyAll();
+				System.out.println("Thread " + Thread.currentThread().getName()
+						+ " consumiendo.");
+			} catch (BufferSinElementosException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
-	@Override
 	public void run() {
-		this.consumir();
+		try {
+			this.consumir();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

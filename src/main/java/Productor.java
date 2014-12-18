@@ -7,18 +7,31 @@ public class Productor implements Runnable{
 		this.buffer = buffer;
 	}
 
-	public void producir() {
-		try {
-			this.buffer.agregarElemento();
-		} catch (BufferCompletoException e) {
-			// debe ponerse el thread a esperar a que se consuma un elemento.
-			e.printStackTrace();
+	public void producir() throws InterruptedException {
+		synchronized (buffer) {
+			while (buffer.completo()) {
+				buffer.wait();
+				System.out.println("Thread " + Thread.currentThread().getName()
+						+ " esperando producir.");
+			}
+			try {
+				this.buffer.agregarElemento();
+				this.buffer.notifyAll();
+				System.out.println("Thread " + Thread.currentThread().getName()
+						+ " produciendo.");
+			} catch (BufferCompletoException e) {
+				e.printStackTrace();
+			}
+
 		}
 	}
 
-	@Override
 	public void run() {
-		this.producir();
+		try {
+			this.producir();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

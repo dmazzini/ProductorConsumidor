@@ -37,4 +37,8 @@ public class Buffer {
 		return ocupado;
 	}
 
+	public boolean completo() {
+		return tamaño == ocupado;
+	}
+
 }

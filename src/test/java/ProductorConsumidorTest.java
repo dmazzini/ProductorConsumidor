@@ -1,12 +1,29 @@
 import static org.junit.Assert.*;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 
 public class ProductorConsumidorTest {
 	
 	private static final int TAMAÑO_BUFFER = 4;
 
+	@Rule public TestName testName = new TestName();
+	
+	
+	@Before
+    public void before() {
+        System.out.println("-Comienza test " + testName.getMethodName());
+    }
+
+	@After
+    public void after() {
+        System.out.println("-Fin test " + testName.getMethodName());
+    }
+	
 	@Test
 	public void bufferNuevo() {
 		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
@@ -98,17 +115,20 @@ public class ProductorConsumidorTest {
 		Productor productor = new Productor(buffer);
 		Consumidor consumidor = new Consumidor(buffer);		
 		Thread threadProductor = new Thread(productor);
+		Thread threadProductor2 = new Thread(productor);
 		Thread threadConsumidor = new Thread(consumidor);
 		Thread threadConsumidor2 = new Thread(consumidor);
 		
 		threadProductor.start();
-		
 		threadConsumidor.start();
 		threadConsumidor2.start();
+		threadProductor2.start();
 		
 		threadProductor.join();
 		threadConsumidor.join();
 		threadConsumidor2.join();
+		threadProductor2.join();
+		
 		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
 		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
 		assertEquals(0, buffer.ocupado());
