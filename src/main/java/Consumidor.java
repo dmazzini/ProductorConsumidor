@@ -1,5 +1,5 @@
 
-public class Consumidor {
+public class Consumidor implements Runnable {
 
 	private final Buffer buffer;
 
@@ -14,6 +14,11 @@ public class Consumidor {
 			// debe ponerse el thread a esperar a que se produzca un elemento.
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void run() {
+		this.consumir();
 	}
 
 }

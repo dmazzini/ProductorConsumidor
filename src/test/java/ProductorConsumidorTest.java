@@ -60,26 +60,33 @@ public class ProductorConsumidorTest {
 	}
 	
 	@Test
-	public void producirElemento() {
+	public void producirElemento() throws InterruptedException {
 		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
 		Productor productor = new Productor(buffer);
 		
-		productor.producir();
+		Thread thread = new Thread(productor);
+		thread.start();
 		
+		thread.join();
 		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
 		assertEquals(TAMAÑO_BUFFER-1, buffer.disponible());
 		assertEquals(1, buffer.ocupado());
 	}
 	
 	@Test
-	public void consumirElemento() {
+	public void consumirElemento() throws InterruptedException {
 		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
 		Productor productor = new Productor(buffer);
 		Consumidor consumidor = new Consumidor(buffer);
 		
-		productor.producir();
-		consumidor.consumir();
+		Thread threadProductor = new Thread(productor);
+		Thread threadConsumidor = new Thread(consumidor);
 		
+		threadProductor.start();
+		threadConsumidor.start();
+		
+		threadProductor.join();
+		threadConsumidor.join();
 		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
 		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
 		assertEquals(0, buffer.ocupado());

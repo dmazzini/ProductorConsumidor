@@ -1,5 +1,5 @@
 
-public class Productor {
+public class Productor implements Runnable{
 
 	private final Buffer buffer;
 
@@ -14,6 +14,11 @@ public class Productor {
 			// debe ponerse el thread a esperar a que se consuma un elemento.
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void run() {
+		this.producir();
 	}
 
 }
