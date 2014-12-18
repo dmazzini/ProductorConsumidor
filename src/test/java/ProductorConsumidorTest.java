@@ -91,4 +91,24 @@ public class ProductorConsumidorTest {
 		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
 		assertEquals(0, buffer.ocupado());
 	}
+	
+	@Test
+	public void esperarConsumirElemento() throws InterruptedException {
+		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+		Productor productor = new Productor(buffer);
+		Consumidor consumidor = new Consumidor(buffer);		
+		Thread threadProductor = new Thread(productor);
+		Thread threadConsumidor = new Thread(consumidor);
+		
+		threadProductor.start();
+		
+		threadConsumidor.start();
+		threadConsumidor.start();
+		
+		threadProductor.join();
+		threadConsumidor.join();
+		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
+		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
+		assertEquals(0, buffer.ocupado());
+	}
 }
