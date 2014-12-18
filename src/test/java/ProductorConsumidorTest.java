@@ -99,14 +99,16 @@ public class ProductorConsumidorTest {
 		Consumidor consumidor = new Consumidor(buffer);		
 		Thread threadProductor = new Thread(productor);
 		Thread threadConsumidor = new Thread(consumidor);
+		Thread threadConsumidor2 = new Thread(consumidor);
 		
 		threadProductor.start();
 		
 		threadConsumidor.start();
-		threadConsumidor.start();
+		threadConsumidor2.start();
 		
 		threadProductor.join();
 		threadConsumidor.join();
+		threadConsumidor2.join();
 		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
 		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
 		assertEquals(0, buffer.ocupado());
