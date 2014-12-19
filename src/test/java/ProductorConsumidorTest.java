@@ -29,7 +29,7 @@ public class ProductorConsumidorTest {
 	
 	@Test
 	public void bufferNuevo() {
-		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+		Buffer<Integer> buffer = new BufferLista<Integer>(TAMAÑO_BUFFER);
 		
 		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
 		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
@@ -37,33 +37,33 @@ public class ProductorConsumidorTest {
 	}
 	
 	@Test
-	public void agregarElementoABuffer() throws BufferCompletoException {
-		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+	public void agregarElementoABuffer() throws BufferCompletoException, InterruptedException {
+		Buffer<Integer> buffer = new BufferLista<Integer>(TAMAÑO_BUFFER);
 		
-		buffer.agregarElemento();
+		buffer.agregarElemento(new Integer(1));
 		
 		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
 		assertEquals(TAMAÑO_BUFFER-1, buffer.disponible());
 		assertEquals(1, buffer.ocupado());
 	}
 	
-	@Test(expected=BufferCompletoException.class)
-	public void agregarElementoABufferCompleto() throws BufferCompletoException {
-		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+	public void agregarElementoABufferCompleto() throws InterruptedException {
+		Buffer<Integer> buffer = new BufferLista<Integer>(TAMAÑO_BUFFER);
 		
-		buffer.agregarElemento();
-		buffer.agregarElemento();
-		buffer.agregarElemento();
-		buffer.agregarElemento();
-		buffer.agregarElemento();
+		buffer.agregarElemento(new Integer(1));
+		buffer.agregarElemento(new Integer(2));
+		buffer.agregarElemento(new Integer(3));
+		buffer.agregarElemento(new Integer(4));
+		buffer.agregarElemento(new Integer(5));
+		buffer.quitarElemento();
 		
 	}
 	
 	@Test
-	public void quitarElementoABuffer() throws BufferSinElementosException, BufferCompletoException {
-		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+	public void quitarElementoABuffer() throws BufferSinElementosException, BufferCompletoException, InterruptedException {
+		Buffer<Integer> buffer = new BufferLista<Integer>(TAMAÑO_BUFFER);
 		
-		buffer.agregarElemento();
+		buffer.agregarElemento(new Integer(1));
 		buffer.quitarElemento();
 		
 		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
@@ -71,17 +71,18 @@ public class ProductorConsumidorTest {
 		assertEquals(0, buffer.ocupado());
 	}
 	
-	@Test(expected=BufferSinElementosException.class)
-	public void quitarElementoABufferNuevo() throws BufferSinElementosException {
-		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+
+	public void quitarElementoABufferNuevo() throws BufferSinElementosException, InterruptedException {
+		Buffer<Integer> buffer = new BufferLista<Integer>(TAMAÑO_BUFFER);
 		
 		buffer.quitarElemento();
+		buffer.agregarElemento(new Integer(1));
 
 	}
 	
 	@Test
 	public void producirElemento() throws InterruptedException {
-		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+		Buffer<Integer> buffer = new BufferLista<Integer>(TAMAÑO_BUFFER);
 		Productor productor = new Productor(buffer);
 		
 		Thread thread = new Thread(productor);
@@ -95,7 +96,7 @@ public class ProductorConsumidorTest {
 	
 	@Test
 	public void consumirElemento() throws InterruptedException {
-		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+		Buffer<Integer> buffer = new BufferLista<Integer>(TAMAÑO_BUFFER);
 		Productor productor = new Productor(buffer);
 		Consumidor consumidor = new Consumidor(buffer);
 		
@@ -114,7 +115,7 @@ public class ProductorConsumidorTest {
 	
 	@Test
 	public void esperarConsumirElemento() throws InterruptedException {
-		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
+		Buffer<Integer> buffer = new BufferLista<Integer>(TAMAÑO_BUFFER);
 		Productor productor = new Productor(buffer);
 		Consumidor consumidor = new Consumidor(buffer);		
 		Thread threadProductor;
@@ -142,4 +143,69 @@ public class ProductorConsumidorTest {
 		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
 		assertEquals(0, buffer.ocupado());
 	}
+	
+	@Test
+	public void producirElementoBlockingQueue() throws InterruptedException {
+		Buffer<Integer> buffer = new BufferBlockingQueue<Integer>(TAMAÑO_BUFFER);
+		Productor productor = new Productor(buffer);
+		
+		Thread thread = new Thread(productor);
+		thread.start();
+		
+		thread.join();
+		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
+		assertEquals(TAMAÑO_BUFFER-1, buffer.disponible());
+		assertEquals(1, buffer.ocupado());
+	}
+	
+	@Test
+	public void consumirElementoBlockingQueue() throws InterruptedException {
+		Buffer<Integer> buffer = new BufferBlockingQueue<Integer>(TAMAÑO_BUFFER);
+		Productor productor = new Productor(buffer);
+		Consumidor consumidor = new Consumidor(buffer);
+		
+		Thread threadProductor = new Thread(productor);
+		Thread threadConsumidor = new Thread(consumidor);
+		
+		threadProductor.start();
+		threadConsumidor.start();
+		
+		threadProductor.join();
+		threadConsumidor.join();
+		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
+		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
+		assertEquals(0, buffer.ocupado());
+	}
+	
+	@Test
+	public void esperarConsumirElementoBlockingQueue() throws InterruptedException {
+		Buffer<Integer> buffer = new BufferBlockingQueue<Integer>(TAMAÑO_BUFFER);
+		Productor productor = new Productor(buffer);
+		Consumidor consumidor = new Consumidor(buffer);		
+		Thread threadProductor;
+		Thread threadConsumidor;
+		List<Thread> threads = new ArrayList<Thread>();
+		for (int i = 0; i<10; i++) {
+			threadProductor = new Thread(productor);
+			threads.add(threadProductor);
+		}
+
+		for (int i = 0; i<10; i++) {
+			threadConsumidor = new Thread(consumidor);
+			threads.add(threadConsumidor);
+		}
+		
+		for (Thread thread : threads) {
+			thread.start();
+		}
+		
+		for (Thread thread : threads) {
+			thread.join();
+		}
+		
+		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
+		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
+		assertEquals(0, buffer.ocupado());
+	}
+	
 }

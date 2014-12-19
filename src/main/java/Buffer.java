@@ -1,29 +1,17 @@
 
-public class Buffer {
+public abstract class Buffer<T> {
 
-	private int tamaño;
-	private int ocupado;
-
+	protected int tamaño;
+	protected int ocupado;
+	
 	public Buffer(int tamaño) {
 		this.tamaño = tamaño;
 		this.ocupado = 0;
 	}
+	
+	public abstract void agregarElemento(T elemento) throws InterruptedException;
 
-	public void agregarElemento() throws BufferCompletoException {
-		if(ocupado < tamaño) {
-			ocupado++;
-		} else {
-			throw new BufferCompletoException();
-		}
-	}
-
-	public void quitarElemento() throws BufferSinElementosException {
-		if (ocupado > 0) {
-			ocupado--;
-		} else {
-			throw new BufferSinElementosException();
-		}
-	}
+	public abstract void quitarElemento() throws InterruptedException;
 
 	public int tamaño() {
 		return tamaño;
@@ -33,6 +21,7 @@ public class Buffer {
 		return tamaño-ocupado;
 	}
 
+
 	public int ocupado() {
 		return ocupado;
 	}
@@ -40,5 +29,6 @@ public class Buffer {
 	public boolean completo() {
 		return tamaño == ocupado;
 	}
+
 
 }
