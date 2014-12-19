@@ -1,5 +1,8 @@
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -114,20 +117,26 @@ public class ProductorConsumidorTest {
 		Buffer buffer = new Buffer(TAMAÑO_BUFFER);
 		Productor productor = new Productor(buffer);
 		Consumidor consumidor = new Consumidor(buffer);		
-		Thread threadProductor = new Thread(productor);
-		Thread threadProductor2 = new Thread(productor);
-		Thread threadConsumidor = new Thread(consumidor);
-		Thread threadConsumidor2 = new Thread(consumidor);
+		Thread threadProductor;
+		Thread threadConsumidor;
+		List<Thread> threads = new ArrayList<Thread>();
+		for (int i = 0; i<10; i++) {
+			threadProductor = new Thread(productor);
+			threads.add(threadProductor);
+		}
+
+		for (int i = 0; i<10; i++) {
+			threadConsumidor = new Thread(consumidor);
+			threads.add(threadConsumidor);
+		}
 		
-		threadProductor.start();
-		threadConsumidor.start();
-		threadConsumidor2.start();
-		threadProductor2.start();
+		for (Thread thread : threads) {
+			thread.start();
+		}
 		
-		threadProductor.join();
-		threadConsumidor.join();
-		threadConsumidor2.join();
-		threadProductor2.join();
+		for (Thread thread : threads) {
+			thread.join();
+		}
 		
 		assertEquals(TAMAÑO_BUFFER, buffer.tamaño());
 		assertEquals(TAMAÑO_BUFFER, buffer.disponible());
